@@ -16,18 +16,31 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class BoardCreateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Board
+		fields = ['title']
+
+
+class BoardSerializer(serializers.ModelSerializer):
 	tasks = serializers.SerializerMethodField()
 	class Meta:
 		model = Board
 		fields = ['title', 'tasks']
-	
+
 	def get_tasks(self, obj):
-		return obj.tasks
+		task_obj = obj.tasks.all()
+		task_json = TaskListSerializer(task_obj, many=True).data
+		return task_json
+
 
 class BoardListSerailizer(serializers.ModelSerializer):
-    class Meta:
-        model = Board
-        fields = ['title']
+	owner = serializers.SerializerMethodField()
+	class Meta:
+		model = Board
+		fields = '__all__'
+	def get_owner(self, obj):
+		return obj.owner.username
+
 
 class TaskListSerializer(serializers.ModelSerializer):
 	class Meta:

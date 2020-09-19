@@ -4,9 +4,9 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from .models import Task, Board
-
-from .serializers import RegisterSerializer, BoardCreateSerializer, BoardListSerailizer, TaskCreateSerializer, TaskListSerializer, TaskModifySerializer
+from .serializers import RegisterSerializer, BoardSerializer, BoardCreateSerializer, BoardListSerailizer, TaskCreateSerializer, TaskListSerializer, TaskModifySerializer
 from .permissions import IsOwner, IsBoardOwner
+
 
 class Register(CreateAPIView):
     serializer_class = RegisterSerializer
@@ -21,17 +21,15 @@ class BoardCreate(CreateAPIView):
 
 
 class MyBoardList(ListAPIView):
-    serializer_class = BoardListSerailizer
+    serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated]
-
-
     def get_queryset(self):
         return Board.objects.filter(owner = self.request.user )
 
 
 class BoardList(ListAPIView):
     queryset = Board.objects.all()
-    serializer_class = BoardCreateSerializer
+    serializer_class = BoardListSerailizer
     permission_classes = [IsAuthenticated]
 
 class TaskList(ListAPIView):
@@ -54,7 +52,7 @@ class TaskList(ListAPIView):
 
 class AddTask(CreateAPIView):
     serializer_class = TaskCreateSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated, IsBoardOwner]
 
     def perform_create(self, serializer):
         serializer.save(board_id=self.kwargs['board_id'])
@@ -63,7 +61,7 @@ class ModifyTask(RetrieveUpdateAPIView):
 	queryset = Task.objects.all()
 	serializer_class = TaskModifySerializer
 	lookup_field = 'id'
-	lookup_url_kwarg = 'task_id'	
+	lookup_url_kwarg = 'task_id'
 	permission_classes = [IsAuthenticated, IsBoardOwner]
 
 class DeleteBoard(DestroyAPIView):
