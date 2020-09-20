@@ -23,6 +23,7 @@ class BoardCreate(CreateAPIView):
 class MyBoardList(ListAPIView):
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated]
+    
     def get_queryset(self):
         return Board.objects.filter(owner = self.request.user )
 
@@ -32,6 +33,7 @@ class BoardList(ListAPIView):
     serializer_class = BoardListSerailizer
     permission_classes = [IsAuthenticated]
 
+
 class TaskList(ListAPIView):
     serializer_class = TaskListSerializer
     lookup_field = 'id'
@@ -39,7 +41,6 @@ class TaskList(ListAPIView):
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['creation_date', 'is_hidden', 'is_done']
-
 
     def get_queryset(self):
         board_obj = Board.objects.get(id=self.kwargs['board_id'])
@@ -52,10 +53,11 @@ class TaskList(ListAPIView):
 
 class AddTask(CreateAPIView):
     serializer_class = TaskCreateSerializer
-    permission_classes = [IsAuthenticated, IsBoardOwner]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def perform_create(self, serializer):
         serializer.save(board_id=self.kwargs['board_id'])
+
 
 class ModifyTask(RetrieveUpdateAPIView):
 	queryset = Task.objects.all()
@@ -64,11 +66,13 @@ class ModifyTask(RetrieveUpdateAPIView):
 	lookup_url_kwarg = 'task_id'
 	permission_classes = [IsAuthenticated, IsBoardOwner]
 
+
 class DeleteBoard(DestroyAPIView):
     queryset = Board.objects.all()
     lookup_field = 'id'
     lookup_url_kwarg = 'board_id'
     permission_classes = [IsAuthenticated, IsOwner]
+
 
 class DeleteTask(DestroyAPIView):
     queryset = Task.objects.all()
